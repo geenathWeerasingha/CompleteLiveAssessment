@@ -7,6 +7,7 @@ using LiveAssessment.Interfaces;
 using LiveAssessment.Models;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.Text.RegularExpressions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
 
 namespace WashAndGo.Controllers
 {
@@ -57,48 +58,54 @@ namespace WashAndGo.Controllers
             }
         }
 
+        [HttpPut("{Id}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public IActionResult Put(int Id,[FromBody] ProductDto productDto)
+        {
 
-        //[HttpPut]
-        //[ProducesResponseType(204)]
-        //[ProducesResponseType(400)]
-        //[ProducesResponseType(404)]
-        //public IActionResult Put([FromBody] ProductDto productDto)
-        //{
-          
-        //    try
-        //    {
-        //        if (productDto == null)
-        //            return BadRequest(new { message = "productDto details required." });
+            try
+            {
+                if (productDto == null)
+                    return BadRequest(new { message = "productDto details required." });
 
-        //        var foundProduct = _productRepository.GetProductById( );
+                var foundProduct = _productRepository.GetProductById(Id);
 
-        //        if (foundProduct != null)
-        //        {
-        //            foundProduct.AdminName = productDto.AdminName;
-                   
+                if (foundProduct != null)
+                {
+                    foundProduct.Name = productDto.Name;
+                    foundProduct.Description = productDto.Description;
+                    foundProduct.Price = productDto.Price;
+                    foundProduct.Sku = productDto.Sku;
+                    foundProduct.VendorId = productDto.VendorId;
 
-        //            if (!ModelState.IsValid)
-        //                return BadRequest();
+                    foundProduct.Variations = _mapper.Map<ICollection<Variation>>(productDto.Variations);
+                     
+                     
 
-        //            if (!_productRepository.UpdateProduct(foundProduct))
-        //            {
-        //                ModelState.AddModelError("", "Something went wrong updating the Product");
-        //                return StatusCode(500, ModelState);
-        //            }
+                    if (!ModelState.IsValid)
+                        return BadRequest();
 
-        //            return NoContent();
-        //        }
-        //        else
-        //        {
-        //            return NotFound(new { message = "Product not found." });
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.Error.WriteLine(ex);
-        //        return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
-        //    }
-        //}
+                    if (!_productRepository.UpdateProduct(foundProduct))
+                    {
+                        ModelState.AddModelError("", "Something went wrong updating the Product");
+                        return StatusCode(500, ModelState);
+                    }
+
+                    return NoContent();
+                }
+                else
+                {
+                    return NotFound(new { message = "Product not found." });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = ex.Message });
+            }
+        }
 
 
 
